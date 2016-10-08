@@ -89,33 +89,32 @@ public class MainScreen extends AppCompatActivity {
                 /*title = document.title();*/
                 Elements cities = document.body().select("span[itemprop=addressLocality]");
                 Elements countries = document.body().select("span[itemprop=addressRegion]");
-                /*Elements startDates = document.body().select("span[itemprop=startDate]");
-                Elements endDates = document.body().select("span[itemprop=endDate]");*/
+                Elements startDates = document.body().select("meta[itemprop=startDate]");
+                Elements endDates = document.body().select("meta[itemprop=endDate]");
                 Elements names = document.body().select("h3[itemprop=name]");
 
 
                 //data per type of data
                 for(int i=0; i<cities.size();i++){
-                    String city = cities.get(i).ownText();
-                    citiesArray.add(city);
-                    String country = countries.get(i).ownText();
-                    countriesArray.add(country);
-
-                    /*startDatesArray.add(startDates.get(i).ownText());
-                    endDatesArray.add(endDates.get(i).ownText());*/
+                    citiesArray.add(cities.get(i).ownText());
+                    countriesArray.add(countries.get(i).ownText());
+                    startDatesArray.add(startDates.get(i).attr("content"));
+                    endDatesArray.add(endDates.get(i).attr("content"));
                     namesArray.add(names.get(i).ownText());
                 }
 
                 //data per hackathon
                 for(int i=0; i<cities.size();i++){
                     List<String> hackathonData = new ArrayList<String>();
-                    hackathonData.add(citiesArray.get(i));
-                    hackathonData.add(countriesArray.get(i));
+
+                    hackathonData.add("City: "+citiesArray.get(i));
+                    hackathonData.add("Country: "+countriesArray.get(i));
+                    hackathonData.add("Start date: "+startDatesArray.get(i));
+                    hackathonData.add("End date: " +endDatesArray.get(i));
+
                     for (Airport a : airports)
                         if (a.Country.equals(countriesArray.get(i)) && a.City.equals(citiesArray.get(i)) && !a.Code.isEmpty())
-                            hackathonData.add(a.Code);
-                    /*hackathonData.add(startDatesArray.get(i));
-                    hackathonData.add(endDatesArray.get(i));*/
+                            hackathonData.add("Airport code: " + a.Code);
 
                     listDataChild.put(namesArray.get(i), hackathonData);
 
