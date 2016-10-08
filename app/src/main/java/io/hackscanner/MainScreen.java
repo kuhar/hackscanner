@@ -28,6 +28,8 @@ public class MainScreen extends AppCompatActivity {
     String url = "https://mlh.io/seasons/eu-2017/events";
     List<String> citiesArray = new ArrayList<>();
     List<String> countriesArray = new ArrayList<>();
+    List<String> startDatesArray = new ArrayList<>();
+    List<String> endDatesArray = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,8 @@ public class MainScreen extends AppCompatActivity {
                 /*title = document.title();*/
                 Elements cities = document.body().select("span[itemprop=addressLocality]");
                 Elements countries = document.body().select("span[itemprop=addressRegion]");
+                Elements startDates = document.body().select("span[itemprop=startDate]");
+                Elements endDates = document.body().select("span[itemprop=endDate]");
 
                 for(int i=0; i<cities.size();i++){
                     citiesArray.add(cities.get(i).ownText());
