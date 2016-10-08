@@ -2,15 +2,16 @@ package io.hackscanner;
 
 import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -22,8 +23,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MainScreen extends AppCompatActivity {
+import io.hackscanner.io.hackscanner.skyapi.FlightInfo;
+import io.hackscanner.io.hackscanner.skyapi.SkyScannerBroker;
+import io.hackscanner.io.hackscanner.skyapi.UserLocaleSettings;
+
+public class MainScreen extends Activity implements FlightResultProcessor.FlightDataUpdateListener {
+
+    private static final UserLocaleSettings userLocaleSettings = new UserLocaleSettings("PL", "EUR", "pl-PL");
+    private SkyScannerBroker skyScannerBroker = new SkyScannerBroker(userLocaleSettings);
 
 
     ExpandableListAdapter listAdapter;
@@ -38,32 +47,21 @@ public class MainScreen extends AppCompatActivity {
     List<String> namesArray = new ArrayList<>();
     List<Airport> airports = new ArrayList<>();
     List<Drawable> imageArray = new ArrayList<>();
+    Map<String, List<Airport>> airportsForFlight = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
+        new Title().execute();
 
-
-        /*Button titlebutton = (Button) findViewById(R.id.button);
-
-        titlebutton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
-                // Execute Title AsyncTask*/
-                new Title().execute();
-            /*}*/
-       /* });*/
-
-
-
-
-
+        expListView = (ExpandableListView) findViewById(R.id.lvExp);
+        listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild, imageArray);
+        expListView.setAdapter(listAdapter);
     }
 
-    // Title AsyncTask
     private class Title extends AsyncTask<Void, Void, Void> {
-        String title;
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -86,10 +84,7 @@ public class MainScreen extends AppCompatActivity {
             }
 
             try {
-                // Connect to the web site
                 Document document = Jsoup.connect(url).get();
-                // Get the html document title
-                /*title = document.title();*/
                 Elements cities = document.body().select("span[itemprop=addressLocality]");
                 Elements countries = document.body().select("span[itemprop=addressRegion]");
                 Elements startDates = document.body().select("meta[itemprop=startDate]");
@@ -97,8 +92,6 @@ public class MainScreen extends AppCompatActivity {
                 Elements names = document.body().select("h3[itemprop=name]");
                 Elements images = document.body().select("div[class=event-logo] img");
 
-
-                //data per type of data
                 for(int i=0; i<cities.size();i++){
                     citiesArray.add(cities.get(i).ownText());
                     countriesArray.add(countries.get(i).ownText());
@@ -119,19 +112,22 @@ public class MainScreen extends AppCompatActivity {
 
                 }
 
-                //data per hackathon
                 for(int i=0; i<cities.size();i++){
                     List<String> hackathonData = new ArrayList<String>();
-
                     hackathonData.add("City: "+citiesArray.get(i));
                     hackathonData.add("Country: "+countriesArray.get(i));
                     hackathonData.add("Start date: "+startDatesArray.get(i));
                     hackathonData.add("End date: " +endDatesArray.get(i));
 
-                    for (Airport a : airports)
-                        if (a.Country.equals(countriesArray.get(i)) && a.City.equals(citiesArray.get(i)) && !a.Code.isEmpty())
-                            hackathonData.add("Airport code: " + a.Code);
+                    List<Airport> airportsForThisPlace = new ArrayList<>();
 
+                    for (Airport a : airports)
+                        if (a.Country.equals(countriesArray.get(i)) && a.City.equals(citiesArray.get(i)) && !a.Code.isEmpty()) {
+                            airportsForThisPlace.add(a);
+                            //hackathonData.add("Airport code: " + a.Code);
+                        }
+
+                    airportsForFlight.put(namesArray.get(i), airportsForThisPlace);
                     listDataChild.put(namesArray.get(i), hackathonData);
 
                 }
@@ -144,13 +140,32 @@ public class MainScreen extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            // Set title into TextView
-            /*TextView txttitle = (TextView) findViewById(R.id.textView);*/
-            expListView = (ExpandableListView) findViewById(R.id.lvExp);
-            listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild, imageArray);
-            expListView.setAdapter(listAdapter);
-
+            updateListAdapter();
+            requestFlightDataForAllFlights();
         }
+    }
+
+    private void requestFlightDataForAllFlights() {
+        for(int i = 0; i < namesArray.size(); i++) {
+            for(Airport airport : airportsForFlight.get(namesArray.get(i))) {
+                FlightInfo info = new FlightInfo("BCN", airport.Code, startDatesArray.get(i), endDatesArray.get(i));
+                skyScannerBroker.searchFlights(info, new FlightResultProcessor(namesArray.get(i), info, this), this);
+            }
+        }
+    }
+
+    public void onFlightDataUpdated(String flightName, List<String> data) {
+        listDataChild.get(flightName).addAll(data);
+        updateListAdapter();
+    }
+
+    private void updateListAdapter() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                listAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
@@ -171,6 +186,7 @@ public class MainScreen extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
