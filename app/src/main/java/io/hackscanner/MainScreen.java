@@ -54,11 +54,11 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
-        new Title().execute();
-
         expListView = (ExpandableListView) findViewById(R.id.lvExp);
         listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild, imageArray);
         expListView.setAdapter(listAdapter);
+
+        new Title().execute();
     }
 
     private class Title extends AsyncTask<Void, Void, Void> {
@@ -98,18 +98,6 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
                     startDatesArray.add(startDates.get(i).attr("content"));
                     endDatesArray.add(endDates.get(i).attr("content"));
                     namesArray.add(names.get(i).ownText());
-
-                    Drawable d;
-                    try {
-                        InputStream is = (InputStream) new URL(images.get(i).attr("src")).getContent();
-                        d = Drawable.createFromStream(is, "src name");
-
-                    } catch (Exception e) {
-                        d = null;
-                    }
-                    imageArray.add(d);
-
-
                 }
 
                 for(int i=0; i<cities.size();i++){
@@ -129,8 +117,23 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
 
                     airportsForFlight.put(namesArray.get(i), airportsForThisPlace);
                     listDataChild.put(namesArray.get(i), hackathonData);
-
                 }
+
+                updateListAdapter();
+
+                for(int i = 0; i < cities.size(); i++) {
+                    Drawable d;
+                    try {
+                        InputStream is = (InputStream) new URL(images.get(i).attr("src")).getContent();
+                        d = Drawable.createFromStream(is, "src name");
+
+                    } catch (Exception e) {
+                        d = null;
+                    }
+                    imageArray.add(d);
+                    updateListAdapter();
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

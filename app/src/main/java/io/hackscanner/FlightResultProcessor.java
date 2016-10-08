@@ -43,7 +43,7 @@ public class FlightResultProcessor implements SkyScannerBroker.FlightsReceivedCa
         try {
             JSONArray quotes = response.getJSONArray("Quotes");
 
-            List<JSONObject> quotesAsList = new ArrayList<JSONObject>();
+            List<JSONObject> quotesAsList = new ArrayList<>();
 
             for (int i = 0; i < quotes.length(); i++) {
                 quotesAsList.add(quotes.getJSONObject(i));
@@ -52,7 +52,7 @@ public class FlightResultProcessor implements SkyScannerBroker.FlightsReceivedCa
             Collections.sort(quotesAsList, new ByPriceComparator());
 
             SimpleDateFormat originalDataFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            SimpleDateFormat expectedDateFormat = new SimpleDateFormat("dd/MM 'at' HH:mm");
+            SimpleDateFormat expectedDateFormat = new SimpleDateFormat("dd/MM");
 
             if(quotesAsList.size() > 0) {
                 String departureDateAsString = quotesAsList.get(0).getJSONObject("OutboundLeg").getString("DepartureDate");
@@ -60,6 +60,8 @@ public class FlightResultProcessor implements SkyScannerBroker.FlightsReceivedCa
                 String dateInExpectedFormat = expectedDateFormat.format(date);
 
                 data.add("BCN -> " + info.destinationPlace + ", " + dateInExpectedFormat + " for " + quotesAsList.get(0).getDouble("MinPrice") + " EUR");
+
+                data.add(quotesAsList.get(0).toString());
             } else {
                 data.add("Unfortunately, no flights found at this time. Try again later!");
             }

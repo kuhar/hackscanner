@@ -103,7 +103,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         lblListHeader.setText(headerTitle);
 
         ImageView imageView = (ImageView) convertView.findViewById(R.id.img);
-        imageView.setImageDrawable(this._imgid.get(groupPosition));
+        if(this._imgid.size() > groupPosition) {
+            imageView.setImageDrawable(this._imgid.get(groupPosition));
+        }
         return convertView;
     }
 
