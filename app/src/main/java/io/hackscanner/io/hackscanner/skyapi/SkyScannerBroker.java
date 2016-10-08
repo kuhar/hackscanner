@@ -28,25 +28,8 @@ public class SkyScannerBroker {
     }
 
     public void searchFlights(FlightInfo flightInfo, final FlightsReceivedCallback flightsReceivedCallback, Context context) {
-        Uri.Builder uriBuilder = new Uri.Builder();
-        uriBuilder.scheme("http").authority("partners.api.skyscanner.net")
-                .appendPath("apiservices")
-                .appendPath("browsequotes")
-                .appendPath("v1.0")
-                .appendPath(userLocaleSettings.market)
-                .appendPath(userLocaleSettings.currency)
-                .appendPath(userLocaleSettings.locale)
-                .appendPath(flightInfo.originPlace)
-                .appendPath(flightInfo.destinationPlace)
-                .appendPath(flightInfo.outboundPartialDate);
 
-        if(flightInfo.inboundPartialDate != null) {
-            uriBuilder.appendPath(flightInfo.inboundPartialDate);
-        }
-
-        uriBuilder.appendQueryParameter("apiKey", apiKey);
-
-        String url = uriBuilder.toString();
+        String url = getFlightRequestUrl(flightInfo, false);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
@@ -63,5 +46,27 @@ public class SkyScannerBroker {
         });
 
         VolleyNetworkAccessSingleton.getInstance(context).addToRequestQueue(jsonObjectRequest);
+    }
+
+    public String getFlightRequestUrl(FlightInfo flightInfo, boolean referral) {
+        Uri.Builder uriBuilder = new Uri.Builder();
+        uriBuilder.scheme("http").authority("partners.api.skyscanner.net")
+                .appendPath("apiservices")
+                .appendPath(referral ? "referral" : "browsequotes")
+                .appendPath("v1.0")
+                .appendPath(userLocaleSettings.market)
+                .appendPath(userLocaleSettings.currency)
+                .appendPath(userLocaleSettings.locale)
+                .appendPath(flightInfo.originPlace)
+                .appendPath(flightInfo.destinationPlace)
+                .appendPath(flightInfo.outboundPartialDate);
+
+        if(flightInfo.inboundPartialDate != null) {
+            uriBuilder.appendPath(flightInfo.inboundPartialDate);
+        }
+
+        uriBuilder.appendQueryParameter("apiKey", apiKey);
+
+        return uriBuilder.toString();
     }
 }

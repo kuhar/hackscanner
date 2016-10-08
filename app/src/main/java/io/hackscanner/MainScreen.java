@@ -49,6 +49,7 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
     List<Airport> airports = new ArrayList<>();
     List<Drawable> imageArray = new ArrayList<>();
     Map<String, List<Airport>> airportsForFlight = new HashMap<>();
+    Map<String, Double> lowestPrices = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +148,14 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
             updateListAdapter();
             requestFlightDataForAllFlights();
         }
+    }
+
+    public void updateLowestPrice(String flightName, Double value) {
+        if(!lowestPrices.containsKey(flightName) || lowestPrices.get(flightName) > value) {
+            lowestPrices.put(flightName, value);
+        }
+
+        // TODO: call external update procedure for this flightName
     }
 
     private void requestFlightDataForAllFlights() {

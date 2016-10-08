@@ -25,6 +25,7 @@ public class FlightResultProcessor implements SkyScannerBroker.FlightsReceivedCa
 
     public interface FlightDataUpdateListener {
         void onFlightDataUpdated(String flightName, List<String> data);
+        void updateLowestPrice(String flightName, Double value);
     }
 
     private String flightName;
@@ -59,18 +60,19 @@ public class FlightResultProcessor implements SkyScannerBroker.FlightsReceivedCa
                 Date date = originalDataFormat.parse(departureDateAsString);
                 String dateInExpectedFormat = expectedDateFormat.format(date);
 
-                data.add("BCN -> " + info.destinationPlace + ", " + dateInExpectedFormat + " for " + quotesAsList.get(0).getDouble("MinPrice") + " EUR");
+                data.add("Round trip BCN -> " + info.destinationPlace + " for " + quotesAsList.get(0).getDouble("MinPrice") + " EUR");
 
-                data.add(quotesAsList.get(0).toString());
+                listener.updateLowestPrice(flightName, quotesAsList.get(0).getDouble("MinPrice"));
+                //data.add(quotesAsList.get(0).toString());
             } else {
-                data.add("Unfortunately, no flights found at this time. Try again later!");
+                //data.add("Unfortunately, no flights found at this time. Try again later!");
             }
 
             listener.onFlightDataUpdated(flightName, data);
 
         } catch (JSONException e) {
             e.printStackTrace();
-            listener.onFlightDataUpdated(flightName, Arrays.asList("Error retrieving flights for this hackaton (JSON)"));
+            //listener.onFlightDataUpdated(flightName, Arrays.asList("Error retrieving flights for this hackaton (JSON)"));
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -90,17 +92,15 @@ public class FlightResultProcessor implements SkyScannerBroker.FlightsReceivedCa
                 valB = (Double) b.get(KEY_NAME);
             }
             catch (JSONException e) {
-                //do something
+
             }
 
             return valA.compareTo(valB);
-            //if you want to change the sort order, simply use the following:
-            //return -valA.compareTo(valB);
         }
     }
 
     @Override
     public void onFlightsRequestError(String error) {
-        listener.onFlightDataUpdated(flightName, Arrays.asList("BCN -> " + info.destinationPlace + ": Not found, sorry!"));
+        //listener.onFlightDataUpdated(flightName, Arrays.asList("Unfortunately, no flights found at this time. Try again later!"));
     }
 }
