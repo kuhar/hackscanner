@@ -1,25 +1,21 @@
 package io.hackscanner;
 
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,6 +68,27 @@ public class MainScreen extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            AssetManager assetManager = getAssets();
+            InputStream input;
+            String text = "";
+
+            try {
+                input = assetManager.open("airports.csv");
+
+                int size = input.available();
+                byte[] buffer = new byte[size];
+                input.read(buffer);
+                input.close();
+
+                // byte buffer into a string
+                text = new String(buffer);
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
             return null;
         }
 
