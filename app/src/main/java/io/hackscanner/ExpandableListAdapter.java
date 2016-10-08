@@ -10,10 +10,12 @@ package io.hackscanner;
 
         import android.content.Context;
         import android.graphics.Typeface;
+        import android.graphics.drawable.Drawable;
         import android.view.LayoutInflater;
         import android.view.View;
         import android.view.ViewGroup;
         import android.widget.BaseExpandableListAdapter;
+        import android.widget.ImageView;
         import android.widget.TextView;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
@@ -22,12 +24,16 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private List<String> _listDataHeader; // header titles
     // child data in format of header title, child title
     private HashMap<String, List<String>> _listDataChild;
+    //add
+    private List<Drawable> _imgid;
 
     public ExpandableListAdapter(Context context, List<String> listDataHeader,
-                                 HashMap<String, List<String>> listChildData) {
+                                 HashMap<String, List<String>> listChildData, List<Drawable> imgid) {
         this._context = context;
         this._listDataHeader = listDataHeader;
         this._listDataChild = listChildData;
+        //add
+        this._imgid = imgid;
     }
 
     @Override
@@ -96,6 +102,8 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         lblListHeader.setTypeface(null, Typeface.BOLD);
         lblListHeader.setText(headerTitle);
 
+        ImageView imageView = (ImageView) convertView.findViewById(R.id.img);
+        imageView.setImageDrawable(this._imgid.get(groupPosition));
         return convertView;
     }
 

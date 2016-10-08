@@ -1,6 +1,7 @@
 package io.hackscanner;
 
 import android.content.res.AssetManager;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,7 @@ public class MainScreen extends AppCompatActivity {
     List<String> endDatesArray = new ArrayList<>();
     List<String> namesArray = new ArrayList<>();
     List<Airport> airports = new ArrayList<>();
+    List<Drawable> imageArray = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +95,7 @@ public class MainScreen extends AppCompatActivity {
                 Elements startDates = document.body().select("meta[itemprop=startDate]");
                 Elements endDates = document.body().select("meta[itemprop=endDate]");
                 Elements names = document.body().select("h3[itemprop=name]");
+                Elements images = document.body().select("div[class=event-logo] img");
 
 
                 //data per type of data
@@ -101,6 +105,18 @@ public class MainScreen extends AppCompatActivity {
                     startDatesArray.add(startDates.get(i).attr("content"));
                     endDatesArray.add(endDates.get(i).attr("content"));
                     namesArray.add(names.get(i).ownText());
+
+                    Drawable d;
+                    try {
+                        InputStream is = (InputStream) new URL(images.get(i).attr("src")).getContent();
+                        d = Drawable.createFromStream(is, "src name");
+
+                    } catch (Exception e) {
+                        d = null;
+                    }
+                    imageArray.add(d);
+
+
                 }
 
                 //data per hackathon
@@ -131,7 +147,7 @@ public class MainScreen extends AppCompatActivity {
             // Set title into TextView
             /*TextView txttitle = (TextView) findViewById(R.id.textView);*/
             expListView = (ExpandableListView) findViewById(R.id.lvExp);
-            listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild);
+            listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild, imageArray);
             expListView.setAdapter(listAdapter);
 
         }
