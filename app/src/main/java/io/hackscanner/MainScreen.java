@@ -1,6 +1,7 @@
 package io.hackscanner;
 
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -169,6 +170,16 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
                 listAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    public void updatePrice(TextView tv, int price) {
+        tv.setText(new Integer(price).toString());
+        if (price <= 12800)
+            tv.setTextColor(Color.GREEN);
+        else if (price <= 512)
+            tv.setTextColor(Color.rgb(255, 194, 12));
+        else
+            tv.setTextColor(Color.RED);
     }
 
     @Override
