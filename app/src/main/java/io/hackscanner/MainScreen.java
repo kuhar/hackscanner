@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import org.jsoup.Jsoup;
@@ -21,9 +22,15 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainScreen extends AppCompatActivity {
+
+
+    ExpandableListAdapter listAdapter;
+    ExpandableListView expListView;
+    HashMap<String, List<String>> listDataChild = new HashMap<>();
 
     String url = "https://mlh.io/seasons/eu-2017/events";
     List<String> citiesArray = new ArrayList<>();
@@ -37,14 +44,20 @@ public class MainScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
-        Button titlebutton = (Button) findViewById(R.id.button);
+
+
+        /*Button titlebutton = (Button) findViewById(R.id.button);
 
         titlebutton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
-                // Execute Title AsyncTask
+                // Execute Title AsyncTask*/
                 new Title().execute();
-            }
-        });
+            /*}*/
+       /* });*/
+
+
+
+
 
     }
 
@@ -61,13 +74,30 @@ public class MainScreen extends AppCompatActivity {
                 /*title = document.title();*/
                 Elements cities = document.body().select("span[itemprop=addressLocality]");
                 Elements countries = document.body().select("span[itemprop=addressRegion]");
-                Elements startDates = document.body().select("span[itemprop=startDate]");
-                Elements endDates = document.body().select("span[itemprop=endDate]");
-                Elements names = document.body().select("span[itemprop=name]");
+                /*Elements startDates = document.body().select("span[itemprop=startDate]");
+                Elements endDates = document.body().select("span[itemprop=endDate]");*/
+                Elements names = document.body().select("h3[itemprop=name]");
 
+
+                //data per type of data
                 for(int i=0; i<cities.size();i++){
                     citiesArray.add(cities.get(i).ownText());
-                    countriesArray.add(cities.get(i).ownText());
+                    countriesArray.add(countries.get(i).ownText());
+                    /*startDatesArray.add(startDates.get(i).ownText());
+                    endDatesArray.add(endDates.get(i).ownText());*/
+                    namesArray.add(names.get(i).ownText());
+                }
+
+                //data per hackathon
+                for(int i=0; i<cities.size();i++){
+                    List<String> hackathonData = new ArrayList<String>();
+                    hackathonData.add(citiesArray.get(i));
+                    hackathonData.add(countriesArray.get(i));
+                    /*hackathonData.add(startDatesArray.get(i));
+                    hackathonData.add(endDatesArray.get(i));*/
+
+                    listDataChild.put(namesArray.get(i), hackathonData);
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -78,8 +108,10 @@ public class MainScreen extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             // Set title into TextView
-            TextView txttitle = (TextView) findViewById(R.id.textView);
-            
+            /*TextView txttitle = (TextView) findViewById(R.id.textView);*/
+            expListView = (ExpandableListView) findViewById(R.id.lvExp);
+            listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild);
+            expListView.setAdapter(listAdapter);
 
         }
     }
