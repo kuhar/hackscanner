@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ExpandableListView;
@@ -64,6 +65,24 @@ public class MainScreen extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             try {
+                InputStream csvStream = getAssets().open("airports.csv");
+                InputStreamReader csvStreamReader = new InputStreamReader(csvStream);
+                CSVReader csvReader = new CSVReader(csvStreamReader);
+                String[] line;
+
+                while ((line = csvReader.readNext()) != null) {
+                    Airport a = new Airport();
+                    a.City = line[2];
+                    a.Country = line[3];
+                    a.Code = line[4];
+                    airports.add(a);
+                    Log.w("hackscanner", a.City + a.Country + a.Code);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
                 // Connect to the web site
                 Document document = Jsoup.connect(url).get();
                 // Get the html document title
@@ -77,8 +96,11 @@ public class MainScreen extends AppCompatActivity {
 
                 //data per type of data
                 for(int i=0; i<cities.size();i++){
-                    citiesArray.add(cities.get(i).ownText());
-                    countriesArray.add(countries.get(i).ownText());
+                    String city = cities.get(i).ownText();
+                    citiesArray.add(city);
+                    String country = countries.get(i).ownText();
+                    countriesArray.add(country);
+
                     /*startDatesArray.add(startDates.get(i).ownText());
                     endDatesArray.add(endDates.get(i).ownText());*/
                     namesArray.add(names.get(i).ownText());
@@ -89,29 +111,14 @@ public class MainScreen extends AppCompatActivity {
                     List<String> hackathonData = new ArrayList<String>();
                     hackathonData.add(citiesArray.get(i));
                     hackathonData.add(countriesArray.get(i));
+                    for (Airport a : airports)
+                        if (a.Country.equals(countriesArray.get(i)) && a.City.equals(citiesArray.get(i)) && !a.Code.isEmpty())
+                            hackathonData.add(a.Code);
                     /*hackathonData.add(startDatesArray.get(i));
                     hackathonData.add(endDatesArray.get(i));*/
 
                     listDataChild.put(namesArray.get(i), hackathonData);
 
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            AssetManager assetManager = getAssets();
-            try {
-
-                InputStream csvStream = assetManager.open("assets/airports.csv");
-                InputStreamReader csvStreamReader = new InputStreamReader(csvStream);
-                CSVReader csvReader = new CSVReader(csvStreamReader);
-                String[] line;
-
-                // throw away the header
-                csvReader.readNext();
-
-                while ((line = csvReader.readNext()) != null) {
-                    
                 }
             } catch (IOException e) {
                 e.printStackTrace();
