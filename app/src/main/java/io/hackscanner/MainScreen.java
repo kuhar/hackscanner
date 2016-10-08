@@ -16,6 +16,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class MainScreen extends AppCompatActivity {
     List<String> startDatesArray = new ArrayList<>();
     List<String> endDatesArray = new ArrayList<>();
     List<String> namesArray = new ArrayList<>();
+    List<Airport> airports = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,22 +72,20 @@ public class MainScreen extends AppCompatActivity {
             }
 
             AssetManager assetManager = getAssets();
-            InputStream input;
-            String text = "";
-
             try {
-                input = assetManager.open("airports.csv");
 
-                int size = input.available();
-                byte[] buffer = new byte[size];
-                input.read(buffer);
-                input.close();
+                InputStream csvStream = assetManager.open("assets/airports.csv");
+                InputStreamReader csvStreamReader = new InputStreamReader(csvStream);
+                CSVReader csvReader = new CSVReader(csvStreamReader);
+                String[] line;
 
-                // byte buffer into a string
-                text = new String(buffer);
+                // throw away the header
+                csvReader.readNext();
 
+                while ((line = csvReader.readNext()) != null) {
+                    
+                }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
@@ -123,6 +123,12 @@ public class MainScreen extends AppCompatActivity {
     }
 
 
+}
+
+class Airport {
+    String Code;
+    String Country;
+    String City;
 }
 
 
