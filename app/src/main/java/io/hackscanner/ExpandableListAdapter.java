@@ -7,10 +7,15 @@ package io.hackscanner;
 
         import java.util.HashMap;
         import java.util.List;
+        import java.util.Map;
+        import java.util.Random;
 
         import android.content.Context;
+        import android.content.Intent;
+        import android.graphics.Color;
         import android.graphics.Typeface;
         import android.graphics.drawable.Drawable;
+        import android.net.Uri;
         import android.view.LayoutInflater;
         import android.view.View;
         import android.view.ViewGroup;
@@ -18,7 +23,13 @@ package io.hackscanner;
         import android.widget.ImageView;
         import android.widget.TextView;
 
+        import org.w3c.dom.Text;
+
+        import static java.security.AccessController.getContext;
+
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
+
+    private static int updateNo = 0;
 
     private Context _context;
     private List<String> _listDataHeader; // header titles
@@ -26,12 +37,16 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private HashMap<String, List<String>> _listDataChild;
     //add
     private List<Drawable> _imgid;
+    private Map<String, Double> _lowestPrieces;
+    private Map<String, String> _uriForFlights;
 
     public ExpandableListAdapter(Context context, List<String> listDataHeader,
-                                 HashMap<String, List<String>> listChildData, List<Drawable> imgid) {
+                                 HashMap<String, List<String>> listChildData, List<Drawable> imgid, Map<String, Double> lowestPrieces, Map<String, String> uriForFlights) {
         this._context = context;
         this._listDataHeader = listDataHeader;
         this._listDataChild = listChildData;
+        this._lowestPrieces = lowestPrieces;
+        this._uriForFlights = uriForFlights;
         //add
         this._imgid = imgid;
     }
@@ -63,6 +78,18 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
                 .findViewById(R.id.lblListItem);
 
         txtListChild.setText(childText);
+        final int gPosition = groupPosition;
+
+        if(_uriForFlights.containsKey((String) getGroup(groupPosition))) {
+            txtListChild.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(_uriForFlights.get((String) getGroup(gPosition))));
+                    _context.startActivity(browserIntent);
+                }
+            });
+        }
+
         return convertView;
     }
 
@@ -106,7 +133,27 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         if(this._imgid.size() > groupPosition) {
             imageView.setImageDrawable(this._imgid.get(groupPosition));
         }
+
+        TextView priceLabel = (TextView) convertView.findViewById(R.id.rowPriceLabel);
+        if(_lowestPrieces.containsKey(_listDataHeader.get(groupPosition))) {;
+            updatePrice(priceLabel, (_lowestPrieces.get(_listDataHeader.get(groupPosition))));
+        } else {
+            priceLabel.setText("??? Eur");
+            priceLabel.setTextColor(Color.rgb(204, 204, 204));
+        }
+
         return convertView;
+    }
+
+    public void updatePrice(TextView tv, double price) {
+        tv.setText(new Double(price).toString() + " Eur");
+        if (price <= 100) {//34,139,34
+            tv.setTextColor(Color.rgb(34, 139, 34));
+        } else if (price <= 200) {
+            tv.setTextColor(Color.rgb(244, 164, 96));
+        } else {
+            tv.setTextColor(Color.RED);
+        }
     }
 
     @Override

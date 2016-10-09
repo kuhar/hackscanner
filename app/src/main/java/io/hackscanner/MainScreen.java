@@ -50,6 +50,7 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
     List<Drawable> imageArray = new ArrayList<>();
     Map<String, List<Airport>> airportsForFlight = new HashMap<>();
     Map<String, Double> lowestPrices = new HashMap<>();
+    Map<String, String> uriForFlights = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +58,7 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
         setContentView(R.layout.activity_main_screen);
 
         expListView = (ExpandableListView) findViewById(R.id.lvExp);
-        listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild, imageArray);
+        listAdapter = new ExpandableListAdapter(MainScreen.this, namesArray, listDataChild, imageArray, lowestPrices, uriForFlights);
         expListView.setAdapter(listAdapter);
 
         new Title().execute();
@@ -155,19 +156,20 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
             lowestPrices.put(flightName, value);
         }
 
-        // TODO: call external update procedure for this flightName
+        updateListAdapter();
     }
 
     private void requestFlightDataForAllFlights() {
         for(int i = 0; i < namesArray.size(); i++) {
             for(Airport airport : airportsForFlight.get(namesArray.get(i))) {
                 FlightInfo info = new FlightInfo("BCN", airport.Code, startDatesArray.get(i), endDatesArray.get(i));
-                skyScannerBroker.searchFlights(info, new FlightResultProcessor(namesArray.get(i), info, this), this);
+                skyScannerBroker.searchFlights(info, new FlightResultProcessor(namesArray.get(i), info, this, skyScannerBroker), this);
             }
         }
     }
 
-    public void onFlightDataUpdated(String flightName, List<String> data) {
+    public void onFlightDataUpdated(String flightName, List<String> data, Map<String, String> uris) {
+        uriForFlights.putAll(uris);
         listDataChild.get(flightName).addAll(data);
         updateListAdapter();
     }
@@ -179,16 +181,6 @@ public class MainScreen extends Activity implements FlightResultProcessor.Flight
                 listAdapter.notifyDataSetChanged();
             }
         });
-    }
-
-    public void updatePrice(TextView tv, int price) {
-        tv.setText(new Integer(price).toString());
-        if (price <= 12800)
-            tv.setTextColor(Color.GREEN);
-        else if (price <= 512)
-            tv.setTextColor(Color.rgb(255, 194, 12));
-        else
-            tv.setTextColor(Color.RED);
     }
 
     @Override

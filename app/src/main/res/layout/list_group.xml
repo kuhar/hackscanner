@@ -26,9 +26,8 @@
             android:layout_height="wrap_content"
             android:gravity="right"
             android:paddingRight="12dp"
-            android:textSize="14dp"
-            android:textColor="@android:color/holo_green_dark"
-            android:text="100 Eur"/>
+            android:textColor="@android:color/darker_gray"
+            android:text="\?\?\? Eur"/>
     </LinearLayout>
 
 </LinearLayout>
